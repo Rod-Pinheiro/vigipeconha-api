@@ -60,6 +60,8 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+    ports:
+      - '3001:3001'
 
 volumes:
   db_data:
