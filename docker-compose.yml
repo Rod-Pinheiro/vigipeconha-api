@@ -1,0 +1,90 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: vigipeconha_api_db
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - '${DB_PORT:-5432}:5432'
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - vigipeconha_api_network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER} -d ${DB_NAME}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vigipeconha_api
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - '${API_PORT:-3001}:3001'
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - DOCKER=true
+      - DB_HOST=db
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - PORT=${API_PORT}
+      - STORAGE_TYPE=minio
+      - MINIO_ENDPOINT=http://minio:9000
+      - MINIO_REGION=us-east-1
+      - MINIO_URL=http://minio:9000/vigipeconha
+      - MINIO_BUCKET=vigipeconha
+      - MINIO_BASE_URL=http://minio:9000/vigipeconha
+      - MINIO_ACCESS_KEY=${MINIO_ROOT_USER}
+      - MINIO_SECRET_KEY=${MINIO_ROOT_PASSWORD}
+    depends_on:
+      db:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    networks:
+      - vigipeconha_api_network
+    healthcheck:
+      test: ['CMD', 'wget', '--spider', '-q', 'http://localhost:3001/api/']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  minio:
+    image: minio/minio:latest
+    container_name: vigipeconha_api_minio
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+    ports:
+      - '${MINIO_PORT:-9000}:9000'
+      - '${MINIO_CONSOLE_PORT:-9001}:9001'
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    networks:
+      - vigipeconha_api_network
+
+volumes:
+  db_data:
+  minio_data:
+
+networks:
+  vigipeconha_api_network:
+    driver: bridge
