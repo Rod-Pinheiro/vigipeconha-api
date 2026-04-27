@@ -231,4 +231,57 @@ describe('NotificacoesController (e2e)', () => {
         .expect(403);
     });
   });
+
+  describe('/notificacoes/:id/fotos (POST)', () => {
+    beforeEach(async () => {
+      const res = await request(app.getHttpServer())
+        .post('/notificacoes')
+        .set('Authorization', `Bearer ${userToken}`)
+        .send({
+          dataNotificacao: '2026-04-27',
+          horarioOcorrencia: '14:30:00',
+          notificanteNome: 'Test User',
+          tipoLocal: 'residencia',
+          localizacao: {
+            municipio: 'Campinas',
+            bairro: 'Centro',
+          },
+          especies: [{ especieId: '550e8400-e29b-41d4-a716-446655440000' }],
+        });
+      createdNotificationId = res.body.id;
+    });
+
+    it('should allow authenticated user to upload photos', () => {
+      const pngPath = require('path').join(__dirname, 'fixtures', 'test.png');
+      const fs = require('fs');
+      const pngBuffer = fs.readFileSync(pngPath);
+      return request(app.getHttpServer())
+        .post(`/notificacoes/${createdNotificationId}/fotos`)
+        .set('Authorization', `Bearer ${userToken}`)
+        .attach('fotos', pngBuffer, 'test.png')
+        .expect(201);
+    });
+
+    it('should deny unauthenticated user from uploading photos', () => {
+      return request(app.getHttpServer())
+        .post(`/notificacoes/${createdNotificationId}/fotos`)
+        .attach('fotos', Buffer.from('test'), 'test.png')
+        .expect(401);
+    });
+
+    it('should reject upload with no files', () => {
+      return request(app.getHttpServer())
+        .post(`/notificacoes/${createdNotificationId}/fotos`)
+        .set('Authorization', `Bearer ${userToken}`)
+        .expect(500);
+    });
+
+    it('should reject invalid file types', () => {
+      return request(app.getHttpServer())
+        .post(`/notificacoes/${createdNotificationId}/fotos`)
+        .set('Authorization', `Bearer ${userToken}`)
+        .attach('fotos', Buffer.from('not-a-image'), 'test.txt')
+        .expect(500);
+    });
+  });
 });
