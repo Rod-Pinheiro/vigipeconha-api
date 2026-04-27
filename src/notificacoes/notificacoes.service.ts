@@ -385,8 +385,10 @@ export class NotificacoesService {
   }
 
   async remove(id: string): Promise<void> {
-    const notificacao = await this.findOne(id);
-    await this.notificacaoRepository.softRemove(notificacao);
+    await this.findOne(id);
+    await this.notificacaoRepository.update(id, {
+      deletedAt: new Date(),
+    });
   }
 
   async uploadFotos(id: string, files: MulterFile[]): Promise<Foto[]> {

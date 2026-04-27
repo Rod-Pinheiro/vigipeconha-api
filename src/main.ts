@@ -18,6 +18,11 @@ async function bootstrap() {
       'API for VigiPeçonha application - Monitoring venomous animals',
     )
     .setVersion('1.0')
+    .setContact(
+      'VigiPeçonha Team',
+      'https://vigipeconha.example.com',
+      'contact@vigipeconha.example.com',
+    )
     .addTag('auth', 'Authentication endpoints')
     .addTag('users', 'User management')
     .addTag('notificacoes', 'Notification system')
@@ -27,15 +32,21 @@ async function bootstrap() {
         type: 'http',
         scheme: 'bearer',
         bearerFormat: 'JWT',
-        name: 'JWT',
         description: 'Enter JWT token',
-        in: 'header',
       },
-      'JWT-auth',
+      'access-token',
     )
     .build();
+
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, document);
+
+  SwaggerModule.setup('docs', app, document, {
+    customSiteTitle: 'VigiPeçonha API Docs',
+    customCss: '.swagger-ui .topbar { display: none }',
+    swaggerOptions: {
+      persistAuthorization: true,
+    },
+  });
 
   const port = process.env.PORT || 3001;
   await app.listen(port);

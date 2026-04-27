@@ -28,7 +28,7 @@ import { UpdateUserDto } from './update-user.dto';
 import { User } from './user.entity';
 
 @ApiTags('users')
-@ApiBearerAuth()
+@ApiBearerAuth('access-token')
 @Controller('users')
 @UseGuards(AuthGuard('jwt'))
 export class UserController {
@@ -55,6 +55,7 @@ export class UserController {
   @Get(':id')
   @ApiOperation({ summary: 'Get a user by ID' })
   @ApiResponse({ status: 200, description: 'Return the user', type: User })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'User not found' })
   findOne(@Param('id', ParseIntPipe) id: number): Promise<User> {
     return this.userService.findOne(id);

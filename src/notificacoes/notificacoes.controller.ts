@@ -44,7 +44,7 @@ import {
 } from './dto/paginated-result.dto';
 
 @ApiTags('notificacoes')
-@ApiBearerAuth()
+@ApiBearerAuth('access-token')
 @Controller('notificacoes')
 @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
 @UseGuards(AuthGuard('jwt'))
@@ -58,6 +58,7 @@ export class NotificacoesController {
     description: 'Return list of all venomous species',
     type: [Especie],
   })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   async findAllEspecies(): Promise<Especie[]> {
     return this.notificacoesService.findAllEspecies();
   }
@@ -69,6 +70,7 @@ export class NotificacoesController {
     description: 'Return paginated notifications',
     type: PaginatedNotificacaoDto,
   })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiQuery({ name: 'page', required: false, description: 'Page number' })
   @ApiQuery({ name: 'limit', required: false, description: 'Items per page' })
   async findAll(
@@ -84,6 +86,7 @@ export class NotificacoesController {
     description: 'Return notification statistics',
     type: EstatisticasResponseDto,
   })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   async getEstatisticas(): Promise<EstatisticasResponse> {
     return this.notificacoesService.getEstatisticas();
   }
@@ -95,6 +98,7 @@ export class NotificacoesController {
     description: 'Return the notification',
     type: Notificacao,
   })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Notification not found' })
   async findOne(@Param('id', ParseUUIDPipe) id: string): Promise<Notificacao> {
     return this.notificacoesService.findOne(id);
@@ -108,6 +112,7 @@ export class NotificacoesController {
     type: Notificacao,
   })
   @ApiResponse({ status: 400, description: 'Invalid input data' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiBody({ type: CreateNotificacaoDto })
   async create(
     @Body() createNotificacaoDto: CreateNotificacaoDto,
@@ -168,6 +173,7 @@ export class NotificacoesController {
     status: 400,
     description: 'No files uploaded or invalid file type',
   })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Notification not found' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({

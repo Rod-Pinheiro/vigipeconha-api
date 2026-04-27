@@ -81,10 +81,13 @@
       "ts"
     ],
     "rootDir": ".",
-    "testRegex": "test/.*\\.spec\\.ts$",
+    "testRegex": "test/.*\\.e2e-spec\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },
+    "transformIgnorePatterns": [
+      "node_modules/(?!(uuid|class-validator|class-transformer)/)"
+    ],
     "collectCoverageFrom": [
       "src/**/*.(t|j)s"
     ],
